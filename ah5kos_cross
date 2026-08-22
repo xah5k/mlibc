@@ -1,0 +1,11 @@
+[host_machine]
+system = 'ah5kos'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+[binaries]
+c = 'x86_64-ah5kos-gcc'
+cpp = 'x86_64-ah5kos-g++'
+ar = 'x86_64-ah5kos-ar'
+strip = 'x86_64-ah5kos-strip'
+ld = 'x86_64-ah5kos-ld'
