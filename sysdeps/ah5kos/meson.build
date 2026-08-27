@@ -7,6 +7,7 @@ sysdep_supported_options = {
 libc_sources += files(
 	'generic/ah5kos.cpp',
     'generic/entry.cpp',
+	'generic/ah5kos_spec.cpp',
 )
 custom_target('crt1.o',
 	build_by_default: true,
@@ -28,5 +29,8 @@ if not no_headers
 		'include/asm/ioctl.h',
 		'include/asm/ioctls.h',
 		subdir: 'asm',
+	)
+	install_headers(
+		'include/ah5kos.h',
 	)
 endif
