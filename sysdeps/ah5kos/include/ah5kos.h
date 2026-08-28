@@ -30,7 +30,7 @@ typedef struct {
 } KeDevClockWallTime;
 
 typedef struct {
-    uint64_t rsv; // userspace wont be able to write to it anyway
+    uint64_t ptr; // userspace wont be able to write to it anyway
     uint32_t size;
     uint32_t width;
     uint32_t height;
@@ -42,6 +42,24 @@ typedef struct {
 typedef struct {
     Framebuffer* fb;
 } KeDevFbInfo;
+
+typedef enum {
+    KSUCCESS,
+    KFAIL,
+    KUNSUPPORTED,
+    KINVALID,
+    KOOMERR,
+    KHUNG,
+    KRESEND,
+    KDOUBLEFREE
+} KSTATUS;
+
+// fb
+Framebuffer* OsCreateFb(uint32_t width, uint32_t height);
+KSTATUS OsFreeFb(Framebuffer* fb);
+KSTATUS OsDrawFb(Framebuffer* destfb, Framebuffer* srcfb, int x, int y);
+KSTATUS OsGetFbInfo(Framebuffer* buf);
+// end fb
 
 #ifdef __cplusplus 
 }
