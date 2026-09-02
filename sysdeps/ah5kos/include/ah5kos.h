@@ -58,8 +58,47 @@ typedef enum {
 Framebuffer* OsCreateFb(uint32_t width, uint32_t height);
 KSTATUS OsFreeFb(Framebuffer* fb);
 KSTATUS OsDrawFb(Framebuffer* destfb, Framebuffer* srcfb, int x, int y);
+KSTATUS OsDrawFbPart(Framebuffer* destfb, Framebuffer* srcfb, int x, int y, int w, int h);
 KSTATUS OsGetFbInfo(Framebuffer* buf);
 // end fb
+
+// kb
+typedef enum {
+    KEY_ESCAPE = 0xE0,
+    KEY_F1 = 0xF0,
+    KEY_F2,
+    KEY_F3,
+    KEY_F4,
+    KEY_F5,
+    KEY_F6,
+    KEY_F7,
+    KEY_F8,
+    KEY_F9,
+    KEY_F10,
+    KEY_NUMLCK,
+    KEY_SCRLCK,
+    KEY_NM7 = '7',
+    KEY_NM8,
+    KEY_NM9,
+    KEY_NMMINUS = '-',
+    KEY_NM4 = '4',
+    KEY_NM5,
+    KEY_NM6,
+    KEY_NMPLUS = '+',
+    KEY_NM1 = '1',
+    KEY_NM2 = '2',
+    KEY_NM3 = '3',
+    KEY_NM0 = '0',
+    KEY_NMDOT = '.',
+    KEY_F11 = 252,
+    KEY_F12
+} KbdTranslExtraKey;
+// end kb
+
+// time
+KSTATUS OsSleepMs(uint64_t ms);
+KSTATUS OsSleep(uint64_t s);
+// end time
 
 #ifdef __cplusplus 
 }

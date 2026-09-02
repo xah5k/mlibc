@@ -9,11 +9,29 @@
 #include <sys/wait.h>
 #include <asm-generic/fcntl.h>
 #include <poll.h>
+#include <asm-generic/unistd.h>
 
 // sync with fs/vfs.h
 #define VFS_HANDLE_STDOUT 1
 #define VFS_HANDLE_STDERR 2
 #define VFS_HANDLE_STDIN 0
+
+#define VFS_OFD_OFLAG_RO 0x1
+#define VFS_OFD_OFLAG_WO 0x2
+#define VFS_OFD_OFLAG_RW 0x3
+#define VFS_OFD_OFLAG_APPEND 0x4
+#define VFS_OFD_OFLAG_CREATE 0x5
+
+static int convoflag(int flag) {
+    int r = 0;
+    if ((flag & O_RDWR) == O_RDWR) {
+        r |= VFS_OFD_OFLAG_RW;
+    }
+    if ((flag & O_RDONLY) == O_RDONLY) r |= VFS_OFD_OFLAG_RO;
+    if (flag & O_WRONLY) r |= VFS_OFD_OFLAG_WO;
+    if (flag & O_CREAT) r |= VFS_OFD_OFLAG_CREATE;
+    return r;
+}
 
 extern "C" uint64_t dosyscall(uint64_t sys_num, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,  uint64_t arg5) {
     uint64_t ret;
@@ -77,7 +95,7 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
 }
 
 int sys_open(const char *path, int flags, mode_t mode, int *fd) {
-    uint64_t r = dosyscall(OS_OPEN, (uint64_t)path, 0, 0, 0, 0);
+    uint64_t r = dosyscall(OS_OPEN, (uint64_t)path, (uint64_t)convoflag(flags), 0, 0, 0);
     if (r == (uint64_t)-1) return EBADF;
     *fd = (int)r;
     return 0;
@@ -123,7 +141,7 @@ int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read) {
         return 0;
     }
     uint64_t r = dosyscall(OS_READ, (uint64_t)fd, (uint64_t)buf, (uint64_t)count, 0, 0);
-    if (r == (uint64_t)-1) return EBADF;
+    if (r == (uint64_t)-1) return EROFS;
     *bytes_read = r;
     return 0;
 }
@@ -205,7 +223,7 @@ int sys_getcwd(char *buffer, size_t size) {
     if (!buffer) return EINVAL;
     if (size == 0) return EINVAL;
     uint64_t r = dosyscall(OS_GETCWD, (uint64_t)buffer, (uint64_t)size, 0, 0, 0);
-    if (r < 0) return EFAULT;
+    if (r == (uint64_t)-1) return EFAULT;
     return 0;
 }
 
@@ -222,7 +240,7 @@ int sys_open_dir(const char* path, int* fd) {
 int sys_read_entries(int fd, void* buffer, size_t max_size, size_t* bytes_read) {
     if (!buffer || !bytes_read) return EINVAL;
     uint64_t r = dosyscall(OS_GETDIRENT, (uint64_t)fd, (uint64_t)buffer, (uint64_t)max_size, (uint64_t)bytes_read, 0);
-    if (r < 0) return ENOENT;
+    if (r == (uint64_t)-1) return ENOENT;
     *bytes_read = r;
     return 0;
 }
@@ -230,7 +248,7 @@ int sys_read_entries(int fd, void* buffer, size_t max_size, size_t* bytes_read) 
 int sys_uname(struct utsname *buf) {
     if (!buf) return EINVAL;
     uint64_t r = dosyscall(OS_UNAME, (uint64_t)buf, 0, 0, 0, 0);
-    if (r < 0) return ENOSYS;
+    if (r == (uint64_t)-1) return ENOSYS;
     return 0;
 }
 #define	R_OK 4
@@ -273,7 +291,7 @@ uid_t sys_geteuid() {
 
 int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
     uint64_t r = dosyscall(OS_IOCTL, (uint64_t)fd, (uint64_t)request, (uint64_t)arg, 0, 0);
-    if (r < 0) return ENOSYS;
+    if (r == (uint64_t)-1) return ENOSYS;
     if (result) *result = r;
     return 0;
 }
@@ -337,6 +355,7 @@ int sys_waitid(idtype_t idtype, id_t id, siginfo_t *info, int options) {
                 info->si_pid = (pid_t)ret_pid;
                 info->si_status = (int)r & 0xFF;
             }
+            return 0;
             break;
         }
         default: {
@@ -434,6 +453,11 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
         }
     }
     return 0;
+}
+
+int sys_mkdir(const char *path, mode_t mode) {
+    uint64_t r = dosyscall(OS_MKDIR, (uint64_t)path, 0, 0, 0, 0);
+    return (int)r;
 }
 
 }// namespace mlibc
