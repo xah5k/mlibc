@@ -28,8 +28,8 @@ static int convoflag(int flag) {
         r |= VFS_OFD_OFLAG_RW;
     }
     if ((flag & O_RDONLY) == O_RDONLY) r |= VFS_OFD_OFLAG_RO;
-    if (flag & O_WRONLY) r |= VFS_OFD_OFLAG_WO;
-    if (flag & O_CREAT) r |= VFS_OFD_OFLAG_CREATE;
+    if ((flag & O_WRONLY) == O_WRONLY) r |= VFS_OFD_OFLAG_WO;
+    if ((flag & O_CREAT) == O_CREAT) r |= VFS_OFD_OFLAG_CREATE;
     return r;
 }
 
