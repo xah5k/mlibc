@@ -2,10 +2,13 @@
 #include <stdint.h>
 #include "../include/ah5kos.h"
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 extern "C" uint64_t dosyscall(uint64_t sys_num, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,  uint64_t arg5);
 
 extern "C" {
+    // start fb
     typedef struct {
         Framebuffer* dest;
         Framebuffer* src;
@@ -38,6 +41,9 @@ extern "C" {
         KSTATUS s = (KSTATUS)dosyscall(OS_FBGETINFO, (uint64_t)buf, 0, 0, 0, 0);
         return KSUCCESS;
     }
+    // end fb
+
+    // start time
     KSTATUS OsSleepMs(uint64_t ms) {
         KSTATUS s = KSUCCESS;
         uint64_t dms = dosyscall(OS_SLEEPMS, ms, 0, 0, 0, 0);
@@ -47,4 +53,25 @@ extern "C" {
     KSTATUS OsSleep(uint64_t s) {
         return OsSleepMs(1000 * s);
     }
+    // end time
+
+    // start signal
+    KSTATUS OsSignalRegister(OsSignalHdlFunc f, int SigIdx) {
+        uint64_t r = dosyscall(OS_SIGREGISTER, SigIdx, (uint64_t)f, 0, 0, 0);
+        return (KSTATUS)r;
+    }
+    // end signal
+
+    // start msg passing
+    OsMessage* OsMsgGet(uint64_t* LenOut, uint64_t MaxLen) {
+        OsMessage* m = (OsMessage*)malloc(sizeof(OsMessage) + MaxLen);
+        uint64_t r = dosyscall(OS_GETMSGQUEUE, (uint64_t)m, MaxLen, 0, 0, 0);
+        if ((KSTATUS)r != KSUCCESS) {
+            free(m);
+            return NULL;
+        }
+        if (LenOut) *LenOut = m->Length;
+        return m;
+    }
+    // end msg
 }

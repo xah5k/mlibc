@@ -100,6 +100,27 @@ KSTATUS OsSleepMs(uint64_t ms);
 KSTATUS OsSleep(uint64_t s);
 // end time
 
+// signal
+typedef KSTATUS (*OsSignalHdlFunc)(int SigIdx);
+KSTATUS OsSignalRegister(OsSignalHdlFunc f, int SigIdx);
+// KSTATUS OsSignalBlock(int SigIdx);
+// KSTATUS OsSignalUnblock(int SigIdx);
+// KSTATUS OsSignalSend(int Pid, int SigIdx);
+
+// end signal
+
+// msg passing
+// sync with sched/ipc/signal.h
+#define SIGNAL_RECEIVEMSG 45
+typedef struct {
+    uint64_t FromPid;
+    uint64_t ToPid;
+    uint64_t Length;
+    void* Reserved; // cant be read as it points to smth not mapped in the user program.
+} OsMessage;
+OsMessage* OsMsgGet(uint64_t* LenOut, uint64_t MaxLen); // gets the most latest msg
+// end msg
+
 #ifdef __cplusplus 
 }
 #endif

@@ -10,7 +10,7 @@
 #include <asm-generic/fcntl.h>
 #include <poll.h>
 #include <asm-generic/unistd.h>
-
+#include "../include/ah5kos.h"
 // sync with fs/vfs.h
 #define VFS_HANDLE_STDOUT 1
 #define VFS_HANDLE_STDERR 2
@@ -215,8 +215,8 @@ pid_t sys_getppid() {
     return (pid_t)dosyscall(OS_GETPPID, 0, 0, 0, 0, 0);
 }
 int sys_kill(int pid, int signal) {
-    (void)signal; // no signals in kernel yet it js uses a flag
-    return (int)dosyscall(OS_KILL, pid, 0, 0, 0, 0);
+    KSTATUS s = (KSTATUS)dosyscall(OS_KILL, (uint64_t)pid, (uint64_t)signal, 0, 0, 0);
+    return (int) (s == KSUCCESS) ? 0 : -1;
 }
 
 int sys_getcwd(char *buffer, size_t size) {
@@ -369,6 +369,7 @@ int sys_sigaction(int sigidx, const struct sigaction *__restrict sigact, struct 
     if (!sigact) return 0;
     
     uint64_t r = dosyscall(OS_SIGREGISTER, sigidx, (uint64_t)sigact->sa_handler, 0, 0, 0);
+    if ((KSTATUS)r != KSUCCESS) return ENOSYS;
     return 0;
 }
 

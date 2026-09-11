@@ -5,7 +5,7 @@ sysdep_supported_options = {
 	'bsd': true,
 }
 libc_sources += files(
-	'generic/ah5kos.cpp',
+	'generic/ah5kos_mlibc.cpp',
     'generic/entry.cpp',
 	'generic/ah5kos_spec.cpp',
 )
