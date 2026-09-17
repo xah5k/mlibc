@@ -59,12 +59,15 @@ extern "C" {
     KSTATUS OsSignalRegister(OsSignalHdlFunc f, int SigIdx) {
         uint64_t r = dosyscall(OS_SIGREGISTER, SigIdx, (uint64_t)f, 0, 0, 0);
         return (KSTATUS)r;
-    }
+    } 
     // end signal
 
     // start msg passing
     OsMessage* OsMsgGet(uint64_t* LenOut, uint64_t MaxLen) {
         OsMessage* m = (OsMessage*)malloc(sizeof(OsMessage) + MaxLen);
+        if (!m) {
+            return NULL;
+        }
         uint64_t r = dosyscall(OS_GETMSGQUEUE, (uint64_t)m, MaxLen, 0, 0, 0);
         if ((KSTATUS)r != KSUCCESS) {
             free(m);
@@ -73,5 +76,20 @@ extern "C" {
         if (LenOut) *LenOut = m->Length;
         return m;
     }
+    KSTATUS OsMsgSend(OsMessage* msg) {
+        if (!msg) return KINVALID;
+        return (KSTATUS)dosyscall(OS_SENDMSG, (uint64_t)msg, 0, 0, 0, 0);
+    }
     // end msg
+
+    // shared mem
+    KSTATUS OsSharedMapA(uint64_t pid, void* addr, uint64_t length) {
+        if (!addr) return KINVALID;
+        return (KSTATUS)dosyscall(OS_SHMAPA, pid, (uint64_t)addr, length, 0, 0);
+    }
+    KSTATUS OsSharedMapB(uint64_t pid, void* addr, uint64_t length) {
+        if (!addr) return KINVALID;
+        return (KSTATUS)dosyscall(OS_SHMAPB, pid, (uint64_t)addr, length, 0, 0);
+    }
+    // end shared mem
 }

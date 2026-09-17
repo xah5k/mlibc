@@ -43,6 +43,7 @@ typedef struct {
     Framebuffer* fb;
 } KeDevFbInfo;
 
+// kstatus
 typedef enum {
     KSUCCESS,
     KFAIL,
@@ -51,8 +52,14 @@ typedef enum {
     KOOMERR,
     KHUNG,
     KRESEND,
-    KDOUBLEFREE
+    KDOUBLEFREE,
+    KRANGE
 } KSTATUS;
+// end kstatus
+
+// raw syscall
+uint64_t dosyscall(uint64_t sys_num, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,  uint64_t arg5);
+// end raw syscall
 
 // fb
 Framebuffer* OsCreateFb(uint32_t width, uint32_t height);
@@ -119,8 +126,16 @@ typedef struct {
     void* Reserved; // cant be read as it points to smth not mapped in the user program.
 } OsMessage;
 OsMessage* OsMsgGet(uint64_t* LenOut, uint64_t MaxLen); // gets the most latest msg
+KSTATUS OsMsgSend(OsMessage* msg);
 // end msg
 
+// shared mem
+// difference between A and B
+// A maps 'addr' from 'pid' address space into the syscall callers address space
+// B maps 'addr' from syscall callers address space into 'pid' address space
+KSTATUS OsSharedMapA(uint64_t pid, void* addr, uint64_t length);
+KSTATUS OsSharedMapB(uint64_t pid, void* addr, uint64_t length);
+// end shared mem
 #ifdef __cplusplus 
 }
 #endif

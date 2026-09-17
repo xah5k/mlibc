@@ -18,6 +18,33 @@ custom_target('crt1.o',
 	install_dir: 'lib'
 )
 
+custom_target('crti.o',
+	build_by_default: true,
+	input: 'crt-x86_64/crti.S',
+	output: 'crti.o',
+	command: [c_compiler.cmd_array(), '-c', '@INPUT@', '-o', '@OUTPUT@'],
+	install: true,
+	install_dir: 'lib'
+)
+
+custom_target('crtn.o',
+	build_by_default: true,
+	input: 'crt-x86_64/crtn.S',
+	output: 'crtn.o',
+	command: [c_compiler.cmd_array(), '-c', '@INPUT@', '-o', '@OUTPUT@'],
+	install: true,
+	install_dir: 'lib'
+)
+
+custom_target('Scrt1.o',
+	build_by_default: true,
+	input: 'crt-x86_64/Scrt1.S',
+	output: 'Scrt1.o',
+	command: [c_compiler.cmd_array(), '-c', '@INPUT@', '-o', '@OUTPUT@'],
+	install: true,
+	install_dir: 'lib'
+)
+
 if not no_headers
 	# Dynamically copy the whole folder directly to your sysroot destination
 	install_subdir('include/abi-bits',
