@@ -67,6 +67,8 @@ KSTATUS OsFreeFb(Framebuffer* fb);
 KSTATUS OsDrawFb(Framebuffer* destfb, Framebuffer* srcfb, int x, int y);
 KSTATUS OsDrawFbPart(Framebuffer* destfb, Framebuffer* srcfb, int x, int y, int w, int h);
 KSTATUS OsGetFbInfo(Framebuffer* buf);
+KSTATUS OsPutcAtFb(Framebuffer* fb, char c, int x, int y, uint32_t fg, uint32_t bg);
+KSTATUS OsDrawTextAtFb(Framebuffer* fb, const char* text, int x, int y, uint32_t fg, uint32_t bg); // doesnt parse newlines or any special control characters
 // end fb
 
 // kb
@@ -109,7 +111,7 @@ KSTATUS OsSleep(uint64_t s);
 
 // signal
 typedef KSTATUS (*OsSignalHdlFunc)(int SigIdx);
-KSTATUS OsSignalRegister(OsSignalHdlFunc f, int SigIdx);
+KSTATUS OsSignalRegister(void* f, int SigIdx);
 // KSTATUS OsSignalBlock(int SigIdx);
 // KSTATUS OsSignalUnblock(int SigIdx);
 // KSTATUS OsSignalSend(int Pid, int SigIdx);
@@ -136,6 +138,15 @@ KSTATUS OsMsgSend(OsMessage* msg);
 KSTATUS OsSharedMapA(uint64_t pid, void* addr, uint64_t length);
 KSTATUS OsSharedMapB(uint64_t pid, void* addr, uint64_t length);
 // end shared mem
+
+// process
+#define OS_PLOW 0
+#define OS_PMEDIUM 16
+#define OS_PHIGH 32
+KSTATUS OsYield();
+uint64_t OsGetSchedPr();
+KSTATUS OsSetSchedPr(uint64_t pr);
+// end process
 #ifdef __cplusplus 
 }
 #endif

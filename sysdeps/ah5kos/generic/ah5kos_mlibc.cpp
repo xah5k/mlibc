@@ -11,6 +11,9 @@
 #include <poll.h>
 #include <asm-generic/unistd.h>
 #include "../include/ah5kos.h"
+
+// implements posix sysdeps
+
 // sync with fs/vfs.h
 #define VFS_HANDLE_STDOUT 1
 #define VFS_HANDLE_STDERR 2
@@ -459,6 +462,12 @@ int sys_fcntl(int fd, int request, va_list args, int *result) {
 int sys_mkdir(const char *path, mode_t mode) {
     uint64_t r = dosyscall(OS_MKDIR, (uint64_t)path, 0, 0, 0, 0);
     return (int)r;
+}
+
+int sys_sleep(time_t *secs, long *nanos) {
+    // in this case using OsSleep is fine
+    OsSleep((uint64_t)*secs);
+    return 0;
 }
 
 }// namespace mlibc

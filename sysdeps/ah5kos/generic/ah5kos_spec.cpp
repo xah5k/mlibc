@@ -7,6 +7,8 @@
 
 extern "C" uint64_t dosyscall(uint64_t sys_num, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,  uint64_t arg5);
 
+// implements os specifics
+
 extern "C" {
     // start fb
     typedef struct {
@@ -17,6 +19,15 @@ extern "C" {
         uint64_t w;
         uint64_t h;
     } FbDrawPartArgs;
+    typedef struct {
+        Framebuffer* fb;
+        char c;
+        int x;
+        int y;
+        uint32_t fg_color;
+        uint32_t bg_color;
+    } FbPutcAtArgs;
+
     Framebuffer* OsCreateFb(uint32_t width, uint32_t height) {
         uint64_t f = dosyscall(OS_FBCREATE, (uint64_t)width, (uint64_t)height, 0, 0, 0);
         return (Framebuffer*)f;
@@ -37,6 +48,27 @@ extern "C" {
         args.h = (uint64_t)h;
         return (KSTATUS)dosyscall(OS_FBDRAWPART, (uint64_t)&args, 0, 0, 0, 0);
     }
+    KSTATUS OsPutcAtFb(Framebuffer* fb, char c, int x, int y, uint32_t fg, uint32_t bg) {
+        FbPutcAtArgs args;
+        args.fb = fb;
+        args.c = c;
+        args.x = x;
+        args.y = y;
+        args.fg_color = fg;
+        args.bg_color = bg;
+        return (KSTATUS)dosyscall(OS_FBPUTCAT, (uint64_t)&args, 0, 0, 0, 0);
+    }
+    KSTATUS OsDrawTextAtFb(Framebuffer* fb, const char* text, int x, int y, uint32_t fg, uint32_t bg) {
+        const char* ptr = text;
+        int X = x;
+        int Y = y;
+        while (*ptr != '\0') {
+            OsPutcAtFb(fb, *ptr, X, Y, fg, bg);
+            ptr++;
+            X += 8;
+        }
+        return KSUCCESS;
+    }
     KSTATUS OsGetFbInfo(Framebuffer* buf) {
         KSTATUS s = (KSTATUS)dosyscall(OS_FBGETINFO, (uint64_t)buf, 0, 0, 0, 0);
         return KSUCCESS;
@@ -56,7 +88,7 @@ extern "C" {
     // end time
 
     // start signal
-    KSTATUS OsSignalRegister(OsSignalHdlFunc f, int SigIdx) {
+    KSTATUS OsSignalRegister(void* f, int SigIdx) {
         uint64_t r = dosyscall(OS_SIGREGISTER, SigIdx, (uint64_t)f, 0, 0, 0);
         return (KSTATUS)r;
     } 
@@ -92,4 +124,11 @@ extern "C" {
         return (KSTATUS)dosyscall(OS_SHMAPB, pid, (uint64_t)addr, length, 0, 0);
     }
     // end shared mem
+
+    // process
+    KSTATUS OsYield() {
+        return (KSTATUS)dosyscall(OS_YIELD, 0, 0, 0, 0, 0);
+    }
+    
+    // end process
 }
