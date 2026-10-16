@@ -1,9 +1,10 @@
 #include "/home/ah5k/osdev/base/arch/x86_64/syscallidx.h"
 #include <stdint.h>
-#include "../include/ah5kos.h"
+#include <ah5kos.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <mlibc/allocator.hpp>
 
 extern "C" uint64_t dosyscall(uint64_t sys_num, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,  uint64_t arg5);
 
@@ -96,13 +97,13 @@ extern "C" {
 
     // start msg passing
     OsMessage* OsMsgGet(uint64_t* LenOut, uint64_t MaxLen) {
-        OsMessage* m = (OsMessage*)malloc(sizeof(OsMessage) + MaxLen);
+        OsMessage* m = (OsMessage*)getAllocator().allocate(sizeof(OsMessage) + MaxLen);
         if (!m) {
             return NULL;
         }
         uint64_t r = dosyscall(OS_GETMSGQUEUE, (uint64_t)m, MaxLen, 0, 0, 0);
         if ((KSTATUS)r != KSUCCESS) {
-            free(m);
+            getAllocator().free(m);
             return NULL;
         }
         if (LenOut) *LenOut = m->Length;

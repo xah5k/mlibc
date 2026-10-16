@@ -4,11 +4,20 @@ sysdep_supported_options = {
 	'glibc': true,
 	'bsd': true,
 }
-libc_sources += files(
+
+rtld_sources += files(
 	'generic/ah5kos_mlibc.cpp',
-    'generic/entry.cpp',
 	'generic/ah5kos_spec.cpp',
 )
+rtld_include_dirs += include_directories('include')
+
+libc_sources += files(
+	'generic/ah5kos_mlibc.cpp',
+	'generic/entry.cpp',
+	'generic/ah5kos_spec.cpp',
+)
+libc_include_dirs += include_directories('include')
+
 custom_target('crt1.o',
 	build_by_default: true,
 	input: 'crt-x86_64/crt1.S',
@@ -46,7 +55,6 @@ custom_target('Scrt1.o',
 )
 
 if not no_headers
-	# Dynamically copy the whole folder directly to your sysroot destination
 	install_subdir('include/abi-bits',
 		install_dir: 'include',
 		strip_directory: false,
