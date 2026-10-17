@@ -132,6 +132,10 @@ int sys_vm_unmap(void *pointer, size_t size) {
     return (int)r;
 }
 
+int sys_vm_protect(void *pointer, size_t size, int prot) {
+    return 0; // top 10 opsec moments
+}
+
 int sys_close(int fd) {
     uint64_t r = dosyscall(OS_CLOSE, (uint64_t)fd, 0, 0, 0, 0);
     if (r == (uint64_t)-1) return ENOENT;
