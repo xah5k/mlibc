@@ -99,7 +99,7 @@ int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size
     return 0;
 }
 
-extern "C" void* __ah5kos_thread_init;
+extern "C" __attribute__((visibility("hidden"))) void* __ah5kos_thread_init;
 
 extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
     if (sys_tcb_set(tcb)) {
