@@ -99,14 +99,6 @@ int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size
     return 0;
 }
 
-asm(R"(
-    .global ah5kos_thread_init
-    ah5kos_thread_init:
-        pop %rdi
-        pop %rsi
-        pop %rdx
-        call ah5kos_thread_enter
-)");
 extern "C" void* ah5kos_thread_init;
 
 extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {

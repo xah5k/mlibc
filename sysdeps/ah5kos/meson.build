@@ -15,6 +15,7 @@ libc_sources += files(
 	'generic/ah5kos_mlibc.cpp',
 	'generic/entry.cpp',
 	'generic/ah5kos_spec.cpp',
+	'generic/x86_64-thread.s',
 )
 libc_include_dirs += include_directories('include')
 
