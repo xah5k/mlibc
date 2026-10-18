@@ -99,6 +99,16 @@ int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size
     return 0;
 }
 
+asm(R"(
+    .global ah5kos_thread_init
+    ah5kos_thread_init:
+        pop %rdi
+        pop %rsi
+        pop %rdx
+        call ah5kos_thread_enter
+)");
+extern "C" void* ah5kos_thread_init;
+
 extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
     if (sys_tcb_set(tcb)) {
         sys_libc_log("failed to set tcb for new thread!\r\n");
@@ -109,7 +119,7 @@ extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
 }
 
 int sys_clone(void *tcb, pid_t *pid_out, void *stack) {
-    uint64_t r = dosyscall(OS_THRCR, (uint64_t)ah5kos_thread_enter, (uint64_t)stack, 0, 0, 0);
+    uint64_t r = dosyscall(OS_THRCR, (uint64_t)ah5kos_thread_init, (uint64_t)stack, 0, 0, 0);
     *pid_out = r;
     return 0;
 }
