@@ -8,6 +8,7 @@ sysdep_supported_options = {
 rtld_sources += files(
 	'generic/ah5kos_mlibc.cpp',
 	'generic/ah5kos_spec.cpp',
+	'generic/x86_64-thread.s',
 )
 rtld_include_dirs += include_directories('include')
 
