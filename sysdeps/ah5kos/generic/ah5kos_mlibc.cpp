@@ -96,6 +96,7 @@ int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size
     *--stackp = tcb;
     *--stackp = entry;
     *stack = (void *)stackp;
+    return 0;
 }
 
 extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
