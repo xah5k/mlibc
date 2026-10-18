@@ -11,6 +11,8 @@
 #include <poll.h>
 #include <asm-generic/unistd.h>
 #include "../include/ah5kos.h"
+#include <sys/mman.h>
+#include <mlibc/tcb.hpp>
 
 // implements posix sysdeps
 
@@ -75,6 +77,40 @@ void sys_exit(int status) {
 
 int sys_tcb_set(void *pointer) {
     dosyscall(OS_SETFSBASE, (uint64_t)pointer, 0, 0, 0, 0);
+    return 0;
+}
+
+// took this from astral thread code
+int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size_t *stack_size, size_t *guard_size, void **stack_base) {
+    *guard_size = 0;
+    *stack_size = *stack_size ? *stack_size : (64 * 4096);
+    if (!(*stack)) {
+        *stack_base = mmap(NULL, *stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+        if ((*stack_base) == MAP_FAILED)
+            return ENOMEM;
+    } else {
+        *stack_base = *stack;
+    }
+    *stack = (void *)((char *)*stack_base + *stack_size);
+    void **stackp = (void **)*stack;
+    *--stackp = user_arg;
+    *--stackp = tcb;
+    *--stackp = entry;
+    *stack = (void *)stackp;
+}
+
+extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
+    if (sys_tcb_set(tcb)) {
+        sys_libc_log("failed to set tcb for new thread!\r\n");
+        sys_libc_panic();
+    }
+    tcb->invokeThreadFunc((void*)fn, arg);
+    sys_exit(0);
+}
+
+int sys_clone(void *tcb, pid_t *pid_out, void *stack) {
+    uint64_t r = dosyscall(OS_THRCR, (uint64_t)ah5kos_thread_enter, (uint64_t)stack, 0, 0, 0);
+    *pid_out = r;
     return 0;
 }
 
