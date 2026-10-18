@@ -11,7 +11,6 @@
 #include <poll.h>
 #include <asm-generic/unistd.h>
 #include "../include/ah5kos.h"
-#include <sys/mman.h>
 #include <mlibc/tcb.hpp>
 
 // implements posix sysdeps
@@ -85,7 +84,7 @@ int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size
     *guard_size = 0;
     *stack_size = *stack_size ? *stack_size : (64 * 4096);
     if (!(*stack)) {
-        *stack_base = mmap(NULL, *stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+        sys_vm_map(NULL, *stack_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0, stack_base);
         if ((*stack_base) == MAP_FAILED)
             return ENOMEM;
     } else {
