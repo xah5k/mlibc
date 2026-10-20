@@ -106,7 +106,9 @@ extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
         sys_libc_log("failed to set tcb for new thread!\r\n");
         sys_libc_panic();
     }
+    while(__atomic_load_n(&tcb->tid, __ATOMIC_RELAXED) == 0) sys_yield();
     tcb->invokeThreadFunc((void*)fn, arg);
+    __atomic_store_n(&tcb->didExit, 1, __ATOMIC_RELEASE);
     sys_exit(0);
 }
 
