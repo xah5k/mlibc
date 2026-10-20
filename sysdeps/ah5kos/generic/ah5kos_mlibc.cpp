@@ -111,7 +111,7 @@ extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
 }
 
 int sys_clone(void *tcb, pid_t *pid_out, void *stack) {
-    uint64_t r = dosyscall(OS_THRCR, (uint64_t)__ah5kos_thread_init, (uint64_t)stack, (uint64_t)tcb, 0, 0);
+    uint64_t r = dosyscall(OS_THRCR, (uint64_t)&__ah5kos_thread_init, (uint64_t)stack, (uint64_t)tcb, 0, 0);
     *pid_out = r;
     return 0;
 }
