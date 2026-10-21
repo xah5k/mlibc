@@ -59,6 +59,7 @@ extern "C" uint64_t dosyscall(uint64_t sys_num, uint64_t arg1, uint64_t arg2, ui
 namespace mlibc {
 int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offset, void **window);
 int sys_vm_unmap(void *pointer, size_t size);
+void sys_yield();
 void sys_exit(int status);
 void sys_libc_log(const char *message) {
     dosyscall(OS_CONWRITE, (uint64_t)message, 0, 0, 0, 0);
@@ -67,6 +68,7 @@ void sys_libc_log(const char *message) {
 void sys_libc_panic() {
     sys_libc_log("\nmlibc panic\n");
     sys_exit(1);
+    __builtin_unreachable();
 }
 
 void sys_exit(int status) {
@@ -106,7 +108,8 @@ extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
         sys_libc_log("failed to set tcb for new thread!\r\n");
         sys_libc_panic();
     }
-    while(__atomic_load_n(&tcb->tid, __ATOMIC_RELAXED) == 0) sys_yield();
+    sys_libc_log("hello from ah5kos_thread_enter!\r\n");
+    __atomic_store_n(&tcb->tid, dosyscall(OS_THRGETID, 0, 0, 0, 0, 0), __ATOMIC_RELEASE);
     tcb->invokeThreadFunc((void*)fn, arg);
     __atomic_store_n(&tcb->didExit, 1, __ATOMIC_RELEASE);
     sys_exit(0);
@@ -138,6 +141,7 @@ int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written) {
 }
 
 int sys_open(const char *path, int flags, mode_t mode, int *fd) {
+    (void)mode;
     uint64_t r = dosyscall(OS_OPEN, (uint64_t)path, (uint64_t)convoflag(flags), 0, 0, 0);
     if (r == (uint64_t)-1) return EBADF;
     *fd = (int)r;
@@ -173,6 +177,9 @@ int sys_vm_unmap(void *pointer, size_t size) {
 }
 
 int sys_vm_protect(void *pointer, size_t size, int prot) {
+    (void)pointer;
+    (void)size;
+    (void)prot;
     return 0; // top 10 opsec moments
 }
 
@@ -215,17 +222,24 @@ int sys_clock_get(int clock_id, time_t *secs, long *nanosecs) {
 }
 
 // stub
-int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) { return ENOSYS; }
-int sys_futex_wake(int *pointer) { return ENOSYS; }
-
-// fake a stat struct for good luck
+int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) { 
+    (void)pointer;
+    (void)expected;
+    (void)timeout;
+    return ENOSYS; 
+}
+int sys_futex_wake(int *pointer) { 
+    (void)pointer;
+    return ENOSYS;
+}
 int sys_fstat(int fd, struct stat *st) {
     memset(st, 0, sizeof(struct stat));
     int r = (int)dosyscall(OS_STAT, (uint64_t)fd, (uint64_t)st, 0, 0, 0);
-    if (r == (uint64_t)-1) return ENOENT;
+    if ((uint64_t)r == (uint64_t)-1) return ENOENT;
     return 0;
 }
 int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat *statbuf) {
+    (void)flags;
     switch (fsfdt) {
         case fsfd_target::path: {
             int r = (int)dosyscall(OS_STAT, (uint64_t)path, (uint64_t)statbuf, 0, 0, 0);
@@ -344,6 +358,7 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
 }
 
 int sys_pipe(int *fds, int flags) {
+    (void)flags;
     uint64_t r = dosyscall(OS_CRPIPE, (uint64_t)fds, 0, 0, 0, 0);
     if (r == (uint64_t)-1) return EMFILE;
     return 0;
@@ -363,18 +378,23 @@ int sys_execve(const char *path, char *const argv[], char *const envp[]) {
 }
 
 int sys_dup(int fd, int flags, int *newfd) {
+    (void)flags;
     uint64_t r = dosyscall(OS_DUP, (uint64_t)fd, 0, 0, 0, 0);
     if (r == (uint64_t)-1) return EBADF;
     if (newfd) *newfd = (int)r;
     return 0;
 }
+
 int sys_dup2(int fd, int flags, int newfd) {
+    (void)flags;
     uint64_t r = dosyscall(OS_DUP2, (uint64_t)fd, (uint64_t)newfd, 0, 0, 0);
     if (r == (uint64_t)-1) return EBADF;
     return 0;
 }
 
 int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid) {
+    (void)flags;
+    (void)ru;
     uint64_t r = dosyscall(OS_WAIT, (uint64_t)pid, 0, 0, 0, 0);
     if (r == (uint64_t)-1) {
         return ECHILD; 
@@ -389,6 +409,7 @@ int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret
 }
 
 int sys_waitid(idtype_t idtype, id_t id, siginfo_t *info, int options) {
+    (void)options;
     switch (idtype) {
         case idtype_t::P_PID: {
             int status;
