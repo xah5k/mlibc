@@ -109,10 +109,14 @@ extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
         sys_libc_panic();
     }
     sys_libc_log("hello from ah5kos_thread_enter!\r\n");
-    __atomic_store_n(&tcb->tid, dosyscall(OS_THRGETID, 0, 0, 0, 0, 0), __ATOMIC_RELEASE);
+    __atomic_store_n(&tcb->tid, dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1, __ATOMIC_RELEASE);
     tcb->invokeThreadFunc((void*)fn, arg);
     __atomic_store_n(&tcb->didExit, 1, __ATOMIC_RELEASE);
     sys_exit(0);
+}
+
+int sys_futex_tid() {
+    return dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1; // main thread in kernel is tid 0
 }
 
 int sys_clone(void *tcb, pid_t *pid_out, void *stack) {
