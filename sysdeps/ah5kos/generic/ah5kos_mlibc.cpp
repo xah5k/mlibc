@@ -119,6 +119,10 @@ int sys_futex_tid() {
     return dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1; // main thread in kernel is tid 0
 }
 
+int sys_gettid() {
+    return dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1; // main thread in kernel is tid 0
+}
+
 int sys_clone(void *tcb, pid_t *pid_out, void *stack) {
     uint64_t r = dosyscall(OS_THRCR, (uint64_t)&__ah5kos_thread_init, (uint64_t)stack, (uint64_t)tcb, 0, 0);
     *pid_out = r;
