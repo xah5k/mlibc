@@ -119,6 +119,19 @@ int sys_futex_tid() {
     return dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1; // main thread in kernel is tid 0
 }
 
+// even more of a pathetic stub
+int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) { 
+    (void)timeout;
+    while (__atomic_load_n(pointer, __ATOMIC_ACQUIRE) != expected) return EAGAIN;
+    sys_yield();
+    return 0; 
+}
+
+int sys_futex_wake(int *pointer) { 
+    (void)pointer;
+    return 0;
+}
+
 int sys_gettid() {
     return dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1; // main thread in kernel is tid 0
 }
@@ -229,17 +242,6 @@ int sys_clock_get(int clock_id, time_t *secs, long *nanosecs) {
     return 0;
 }
 
-// stub
-int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) { 
-    (void)pointer;
-    (void)expected;
-    (void)timeout;
-    return ENOSYS; 
-}
-int sys_futex_wake(int *pointer) { 
-    (void)pointer;
-    return ENOSYS;
-}
 int sys_fstat(int fd, struct stat *st) {
     memset(st, 0, sizeof(struct stat));
     int r = (int)dosyscall(OS_STAT, (uint64_t)fd, (uint64_t)st, 0, 0, 0);
