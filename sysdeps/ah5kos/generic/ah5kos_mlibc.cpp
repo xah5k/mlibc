@@ -119,17 +119,21 @@ int sys_futex_tid() {
     return dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1; // main thread in kernel is tid 0
 }
 
-// even more of a pathetic stub
 int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) { 
-    (void)timeout;
-    while (__atomic_load_n(pointer, __ATOMIC_ACQUIRE) != expected) return EAGAIN;
-    sys_yield();
-    return 0; 
+    KSTATUS s = (KSTATUS)dosyscall(OS_FUTEXWAIT, (uint64_t)pointer, (uint64_t)expected, 0, 0, 0);
+    int r = 0;
+    if (s == KSUCCESS) return r;
+    else if (s == KINVALID) r = EINVAL;
+    else if (s == KRESEND) r = EAGAIN;
+    return r; 
 }
 
 int sys_futex_wake(int *pointer) { 
-    (void)pointer;
-    return 0;
+    KSTATUS s = (KSTATUS)dosyscall(OS_FUTEXWAKE, 0, 0, 0, 0, 0);
+    int r = 0;
+    if (s == KSUCCESS) return r;
+    else if (s == KINVALID) r = EINVAL;
+    return r;
 }
 
 int sys_gettid() {
