@@ -108,7 +108,7 @@ extern "C" void ah5kos_thread_enter(void *(*fn)(void *), Tcb *tcb, void *arg) {
         sys_libc_log("failed to set tcb for new thread!\r\n");
         sys_libc_panic();
     }
-    sys_libc_log("hello from ah5kos_thread_enter!\r\n");
+    // sys_libc_log("hello from ah5kos_thread_enter!\r\n");
     __atomic_store_n(&tcb->tid, dosyscall(OS_THRGETID, 0, 0, 0, 0, 0)+1, __ATOMIC_RELEASE);
     tcb->invokeThreadFunc((void*)fn, arg);
     __atomic_store_n(&tcb->didExit, 1, __ATOMIC_RELEASE);
@@ -120,6 +120,7 @@ int sys_futex_tid() {
 }
 
 int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) { 
+    // sys_libc_log("sys_futex_wait enter.\r\n");
     KSTATUS s = (KSTATUS)dosyscall(OS_FUTEXWAIT, (uint64_t)pointer, (uint64_t)expected, 0, 0, 0);
     int r = 0;
     if (s == KSUCCESS) return r;
@@ -128,8 +129,9 @@ int sys_futex_wait(int *pointer, int expected, const struct timespec *timeout) {
     return r; 
 }
 
-int sys_futex_wake(int *pointer) { 
-    KSTATUS s = (KSTATUS)dosyscall(OS_FUTEXWAKE, 0, 0, 0, 0, 0);
+int sys_futex_wake(int *pointer) {
+    // sys_libc_log("sys_futex_wake enter.\r\n");
+    KSTATUS s = (KSTATUS)dosyscall(OS_FUTEXWAKE, (uint64_t)pointer, 0, 0, 0, 0);
     int r = 0;
     if (s == KSUCCESS) return r;
     else if (s == KINVALID) r = EINVAL;
