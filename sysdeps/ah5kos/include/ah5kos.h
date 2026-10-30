@@ -147,6 +147,10 @@ KSTATUS OsYield();
 uint64_t OsGetSchedPr();
 KSTATUS OsSetSchedPr(uint64_t pr);
 // end process
+
+// file
+int OsToggleBlock(int handle, int val);
+// end file
 #ifdef __cplusplus 
 }
 #endif

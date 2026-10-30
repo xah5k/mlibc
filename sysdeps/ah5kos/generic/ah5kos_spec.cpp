@@ -132,4 +132,10 @@ extern "C" {
     }
     
     // end process
+
+    // file
+    int OsToggleBlock(int handle, int val) {
+        return (int)dosyscall(OS_BLOCKFILE, (uint64_t)handle, (uint64_t)val, 0, 0, 0);
+    }
+    // end file
 }
