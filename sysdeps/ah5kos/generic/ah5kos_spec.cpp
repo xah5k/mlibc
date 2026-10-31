@@ -137,5 +137,8 @@ extern "C" {
     int OsToggleBlock(int handle, int val) {
         return (int)dosyscall(OS_BLOCKFILE, (uint64_t)handle, (uint64_t)val, 0, 0, 0);
     }
+	int OsGetFileSize(int handle) {
+		return (int)dosyscall(OS_SIZEFILE, (uint64_t)handle, 0, 0, 0, 0);
+	}
     // end file
 }

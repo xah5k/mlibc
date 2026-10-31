@@ -150,6 +150,7 @@ KSTATUS OsSetSchedPr(uint64_t pr);
 
 // file
 int OsToggleBlock(int handle, int val);
+int OsGetFileSize(int handle);
 // end file
 #ifdef __cplusplus 
 }
