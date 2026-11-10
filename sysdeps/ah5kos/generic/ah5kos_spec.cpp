@@ -130,7 +130,21 @@ extern "C" {
     KSTATUS OsYield() {
         return (KSTATUS)dosyscall(OS_YIELD, 0, 0, 0, 0, 0);
     }
-    
+    static int CountV(const char** p) {
+        int i = 0;
+        while (p[i] != NULL) i++;
+        return i;
+    }
+    KSTATUS OsSpawn(const char* path, const char** argv, int argc, const char** envp, uint64_t* outpid) {
+        if (!path || !argv || !envp) return KINVALID;
+        int envc = CountV(envp);
+        uint64_t r = dosyscall(OS_SPAWN, (uint64_t)path, (uint64_t)argv, (uint64_t)argc, (uint64_t)envp, (uint64_t)envc);
+        if (r != (uint64_t)-1) {
+            if (outpid) *outpid = r;
+            return KSUCCESS;
+        }
+        return KFAIL;
+    }
     // end process
 
     // file
@@ -141,4 +155,10 @@ extern "C" {
 		return (int)dosyscall(OS_SIZEFILE, (uint64_t)handle, 0, 0, 0, 0);
 	}
     // end file
+
+    // time
+    uint64_t OsGetUptimeMs() {
+        return dosyscall(OS_NOWMS, 0, 0, 0, 0, 0);
+    }
+    // end time
 }

@@ -239,12 +239,9 @@ int sys_seek(int fd, off_t offset, int whence, off_t *new_offset) {
 }
 
 int sys_clock_get(int clock_id, time_t *secs, long *nanosecs) {
-    uint64_t s;
-    uint64_t ns;
-    uint64_t r = dosyscall(OS_GETCLOCK, (uint64_t)clock_id, (uint64_t)&s, (uint64_t)&ns, 0, 0);
-    if (r == (uint64_t)-1) return ENOSYS;
-    *secs = (time_t)s;
-    *nanosecs = (long)ns;
+    uint64_t ms = OsGetUptimeMs();
+    *secs = ms/1000;
+    *nanosecs = ms * 1000000;
     return 0;
 }
 

@@ -140,18 +140,23 @@ KSTATUS OsSharedMapB(uint64_t pid, void* addr, uint64_t length);
 // end shared mem
 
 // process
-#define OS_PLOW 0
-#define OS_PMEDIUM 16
-#define OS_PHIGH 32
+// #define OS_PLOW 0
+// #define OS_PMEDIUM 16
+// #define OS_PHIGH 32
 KSTATUS OsYield();
-uint64_t OsGetSchedPr();
-KSTATUS OsSetSchedPr(uint64_t pr);
+// uint64_t OsGetSchedPr();
+// KSTATUS OsSetSchedPr(uint64_t pr);
+KSTATUS OsSpawn(const char* path, const char** argv, int argc, const char** envp, uint64_t* outpid);
 // end process
 
 // file
 int OsToggleBlock(int handle, int val);
 int OsGetFileSize(int handle);
 // end file
+
+// time
+uint64_t OsGetUptimeMs();
+// end time
 #ifdef __cplusplus 
 }
 #endif
